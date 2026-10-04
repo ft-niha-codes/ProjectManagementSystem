@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Project</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #172554;
+            color: white;
+            padding: 18px 35px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #172554;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 18px;
+
+            border: 1px solid #ccc;
+            border-radius: 5px;
+
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+
+            background-color: #172554;
+            color: white;
+
+            padding: 12px 22px;
+
+            border: none;
+            border-radius: 5px;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1e3a8a;
+        }
+
+        .cancel {
+
+            margin-left: 15px;
+            color: #172554;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h1>Project Task Management System</h1>
+
+</div>
+
+
+<div class="container">
+
+    <h2>Edit Project</h2>
+
+
+    <form action="/projects/update" method="post">
+
+        <input type="hidden"
+               name="id"
+               th:value="${project.id}">
+
+
+        <label>Project Name</label>
+
+        <input type="text"
+               name="name"
+               th:value="${project.name}"
+               required>
+
+
+        <label>Description</label>
+
+        <textarea name="description"
+                  th:text="${project.description}">
+        </textarea>
+
+
+        <label>Status</label>
+
+        <select name="status">
+
+            <option value="Not Started"
+                    th:selected="${project.status == 'Not Started'}">
+
+                Not Started
+
+            </option>
+
+
+            <option value="In Progress"
+                    th:selected="${project.status == 'In Progress'}">
+
+                In Progress
+
+            </option>
+
+
+            <option value="Completed"
+                    th:selected="${project.status == 'Completed'}">
+
+                Completed
+
+            </option>
+
+        </select>
+
+
+        <button type="submit">
+            Update Project
+        </button>
+
+
+        <a href="/projects" class="cancel">Cancel</a>
+
+    </form>
+
+</div>
+
+</body>
+
+</html>

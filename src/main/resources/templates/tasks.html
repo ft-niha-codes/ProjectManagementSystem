@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tasks - Project Task Management System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #172554;
+            color: white;
+            padding: 18px 35px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .box {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #172554;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #172554;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #172554;
+            color: white;
+        }
+
+        .navbar {
+            background-color: #172554;
+            color: white;
+            padding: 18px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .status,
+        .priority {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .status {
+            background-color: #e0e7ff;
+            color: #172554;
+        }
+
+        .priority {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h1>Project Task Management System</h1>
+
+    <div class="nav-links">
+
+        <a href="/">Dashboard</a>
+        <a href="/projects">Projects</a>
+        <a href="/tasks">Tasks</a>
+        <a href="/team">Team Members</a>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="box">
+
+        <h2>Create New Task</h2>
+
+        <form action="/tasks/save" method="post">
+
+            <label>Project</label>
+            <select name="project.id" required>
+                <option value="">Select Project</option>
+                <option th:each="project : ${projects}"
+                        th:value="${project.id}"
+                        th:text="${project.name}">
+
+                </option>
+            </select>
+
+            <label>Task Title</label>
+            <input type="text"
+                   name="title"
+                   placeholder="Enter task title"
+                   required>
+
+            <label>Description</label>
+            <textarea name="description"
+                      placeholder="Enter task description"></textarea>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+
+            <label>Priority</label>
+            <select name="priority">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+
+            <button type="submit">Save Task</button>
+
+        </form>
+
+    </div>
+
+    <div class="box">
+
+        <h2>Tasks</h2>
+
+        <input type="text"
+               id="taskSearch"
+               placeholder="Search tasks..."
+               onkeyup="searchTasks()"
+               style="width:100%; padding:12px; margin-bottom:15px; box-sizing:border-box;">
+
+        <table id="taskTable">
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Project</th>
+                <th>Task Title</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="task : ${tasks}">
+
+                <td th:text="${task.project != null ? task.project.name :'No Project'}"></td>
+
+                <td th:text="${task.id}"></td>
+
+                <td th:text="${task.title}"></td>
+
+                <td th:text="${task.description}"></td>
+
+                <td>
+                    <span class="status"
+                          th:text="${task.status}">
+                        Not Started
+                    </span>
+                </td>
+
+                <td>
+                    <span class="priority"
+                          th:text="${task.priority}">
+                        Low
+                    </span>
+                </td>
+
+                <td>
+                    <a th:href="@{'/tasks/edit/' + ${task.id}}">
+                        Edit
+                    </a>
+
+                    |
+
+                    <a th:href="@{/tasks/delete/{id}(id=${task.id})}"
+                       onclick="return confirm('Are you sure you want to delete this task?')">
+                        Delete
+                    </a>
+                </td>
+
+            </tr>
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+    function searchTasks() {
+
+        let input = document.getElementById("taskSearch");
+        let filter = input.value.toLowerCase();
+
+        let rows = document.querySelectorAll("#taskTable tbody tr");
+
+        rows.forEach(function(row) {
+
+            let taskTitle = row.cells[2].textContent.toLowerCase();
+
+            if (taskTitle.includes(filter)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+
+        });
+    }
+</script>
+</body>
+</html>

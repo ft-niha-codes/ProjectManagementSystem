@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Edit Task - Project Task Management System</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #172554;
+            color: white;
+            padding: 18px 35px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #172554;
+            margin-top: 0;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 18px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #172554;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1e3a8a;
+        }
+
+        .cancel {
+            margin-left: 15px;
+            color: #172554;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="navbar">
+
+    <h1>Project Task Management System</h1>
+
+</div>
+
+
+<div class="container">
+
+    <h2>Edit Task</h2>
+
+
+    <form action="/tasks/update" method="post">
+
+
+        <!-- Task ID -->
+
+        <input type="hidden"
+               name="id"
+               th:value="${task.id}">
+
+
+        <!-- Task Title -->
+
+        <label>Task Title</label>
+
+        <input type="text"
+               name="title"
+               th:value="${task.title}"
+               required>
+
+
+        <!-- Description -->
+
+        <label>Description</label>
+
+        <textarea name="description"
+                  th:text="${task.description}"></textarea>
+
+
+        <!-- Status -->
+
+        <label>Status</label>
+
+        <select name="status">
+
+            <option value="Not Started"
+                    th:selected="${task.status == 'Not Started'}">
+                Not Started
+            </option>
+
+            <option value="In Progress"
+                    th:selected="${task.status == 'In Progress'}">
+                In Progress
+            </option>
+
+            <option value="Completed"
+                    th:selected="${task.status == 'Completed'}">
+                Completed
+            </option>
+
+        </select>
+
+
+        <!-- Priority -->
+
+        <label>Priority</label>
+
+        <select name="priority">
+
+            <option value="Low"
+                    th:selected="${task.priority == 'Low'}">
+                Low
+            </option>
+
+            <option value="Medium"
+                    th:selected="${task.priority == 'Medium'}">
+                Medium
+            </option>
+
+            <option value="High"
+                    th:selected="${task.priority == 'High'}">
+                High
+            </option>
+
+        </select>
+
+
+        <!-- Update Button -->
+
+        <button type="submit">
+            Update Task
+        </button>
+
+
+        <!-- Cancel -->
+
+        <a href="/tasks"
+           class="cancel">
+            Cancel
+        </a>
+
+
+    </form>
+
+</div>
+
+
+</body>
+
+</html>
