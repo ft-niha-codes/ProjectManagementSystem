@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Edit Task - Project Task Management System</title>
+    <title>Edit Task</title>
 
     <style>
 
@@ -40,16 +36,13 @@
 
         h2 {
             color: #172554;
-            margin-top: 0;
         }
 
         label {
             font-weight: bold;
         }
 
-        input,
-        textarea,
-        select {
+        input, textarea, select {
             width: 100%;
             padding: 12px;
             margin: 8px 0 18px;
@@ -60,7 +53,6 @@
 
         textarea {
             height: 100px;
-            resize: vertical;
         }
 
         button {
@@ -72,10 +64,6 @@
             cursor: pointer;
         }
 
-        button:hover {
-            background-color: #1e3a8a;
-        }
-
         .cancel {
             margin-left: 15px;
             color: #172554;
@@ -83,36 +71,43 @@
         }
 
     </style>
-
 </head>
-
 
 <body>
 
-
 <div class="navbar">
-
     <h1>Project Task Management System</h1>
-
 </div>
-
 
 <div class="container">
 
     <h2>Edit Task</h2>
 
-
     <form action="/tasks/update" method="post">
-
-
-        <!-- Task ID -->
 
         <input type="hidden"
                name="id"
                th:value="${task.id}">
 
 
-        <!-- Task Title -->
+        <!-- PROJECT -->
+
+        <label>Project</label>
+
+        <select name="projectId" required>
+
+            <option value="">Select Project</option>
+
+            <option th:each="project : ${projects}"
+                    th:value="${project.id}"
+                    th:text="${project.name}"
+                    th:selected="${task.project != null and project.id == task.project.id}">
+            </option>
+
+        </select>
+
+
+        <!-- TITLE -->
 
         <label>Task Title</label>
 
@@ -122,15 +117,16 @@
                required>
 
 
-        <!-- Description -->
+        <!-- DESCRIPTION -->
 
         <label>Description</label>
 
         <textarea name="description"
-                  th:text="${task.description}"></textarea>
+                  th:text="${task.description}">
+        </textarea>
 
 
-        <!-- Status -->
+        <!-- STATUS -->
 
         <label>Status</label>
 
@@ -154,7 +150,7 @@
         </select>
 
 
-        <!-- Priority -->
+        <!-- PRIORITY -->
 
         <label>Priority</label>
 
@@ -178,26 +174,17 @@
         </select>
 
 
-        <!-- Update Button -->
-
         <button type="submit">
             Update Task
         </button>
 
-
-        <!-- Cancel -->
-
-        <a href="/tasks"
-           class="cancel">
+        <a href="/tasks" class="cancel">
             Cancel
         </a>
-
 
     </form>
 
 </div>
 
-
 </body>
-
 </html>

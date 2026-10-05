@@ -1,8 +1,9 @@
 package com.projectmanagement.projecttaskmanagementsystem.controller;
 
+import com.projectmanagement.projecttaskmanagementsystem.Project;
 import com.projectmanagement.projecttaskmanagementsystem.Task;
-import com.projectmanagement.projecttaskmanagementsystem.repository.TaskRepository;
 import com.projectmanagement.projecttaskmanagementsystem.repository.ProjectRepository;
+import com.projectmanagement.projecttaskmanagementsystem.repository.TaskRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,14 +31,17 @@ public class TaskController {
     }
 
     @PostMapping("/tasks/save")
-    public String saveTask(@ModelAttribute Task task) {
-        taskRepository.save(task);
-        return "redirect:/tasks";
-    }
+    public String saveTask(@ModelAttribute Task task,
+                           @RequestParam Long projectId) {
 
-    @GetMapping("/tasks/delete/{id}")
-    public String deleteTask(@PathVariable Long id) {
-        taskRepository.deleteById(id);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid project ID"));
+
+        task.setProject(project);
+
+        taskRepository.save(task);
+
         return "redirect:/tasks";
     }
 
@@ -45,7 +49,8 @@ public class TaskController {
     public String editTask(@PathVariable Long id, Model model) {
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid task ID"));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid task ID"));
 
         model.addAttribute("task", task);
         model.addAttribute("projects", projectRepository.findAll());
@@ -54,8 +59,25 @@ public class TaskController {
     }
 
     @PostMapping("/tasks/update")
-    public String updateTask(@ModelAttribute Task task) {
+    public String updateTask(@ModelAttribute Task task,
+                             @RequestParam Long projectId) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Invalid project ID"));
+
+        task.setProject(project);
+
         taskRepository.save(task);
+
+        return "redirect:/tasks";
+    }
+
+    @GetMapping("/tasks/delete/{id}")
+    public String deleteTask(@PathVariable Long id) {
+
+        taskRepository.deleteById(id);
+
         return "redirect:/tasks";
     }
 }
