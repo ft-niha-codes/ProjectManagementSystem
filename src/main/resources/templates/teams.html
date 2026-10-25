@@ -172,9 +172,9 @@
                         name="memberIds"
                         multiple
                         required>
-                    <option th:each="member : ${teamMembers}"
-                            th:value="${member.id}"
-                            th:text="${member.name + ' (' + member.email + ')'}">
+                    <option th:each="employee : ${employees}"
+                            th:value="${employee.id}"
+                            th:text="${employee.name + ' (' + employee.email + ')'}">
                     </option>
                 </select>
 
