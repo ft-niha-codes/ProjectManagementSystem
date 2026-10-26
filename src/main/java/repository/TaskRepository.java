@@ -3,6 +3,7 @@ package com.projectmanagement.projecttaskmanagementsystem.repository;
 import com.projectmanagement.projecttaskmanagementsystem.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,9 @@ import java.util.Optional;
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByProjectId(Long projectId);
+
+    @Transactional
+    void deleteByProjectId(Long projectId);
 
     List<Task> findByTeamMember_Id(Long teamMemberId);
 

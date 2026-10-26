@@ -5,11 +5,13 @@ import com.projectmanagement.projecttaskmanagementsystem.Project;
 import com.projectmanagement.projecttaskmanagementsystem.Team;
 import com.projectmanagement.projecttaskmanagementsystem.repository.AppUserRepository;
 import com.projectmanagement.projecttaskmanagementsystem.repository.ProjectRepository;
+import com.projectmanagement.projecttaskmanagementsystem.repository.TaskRepository;
 import com.projectmanagement.projecttaskmanagementsystem.repository.TeamRepository;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,17 +23,22 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final AppUserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final TaskRepository taskRepository;
 
     public ProjectController(
             ProjectRepository projectRepository,
             AppUserRepository userRepository,
-            TeamRepository teamRepository) {
+            TeamRepository teamRepository,
+            TaskRepository taskRepository) {
+
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.teamRepository = teamRepository;
+        this.taskRepository = taskRepository;
     }
 
     private AppUser getManager(Authentication authentication) {
+
         if (authentication == null) {
             throw new AccessDeniedException("Please log in.");
         }
@@ -66,10 +73,12 @@ public class ProjectController {
         Long adminId = manager.getWorkspaceAdminId();
 
         model.addAttribute("project", new Project());
+
         model.addAttribute(
                 "projects",
                 projectRepository.findByOwnerAdmin_Id(adminId)
         );
+
         model.addAttribute(
                 "teams",
                 teamRepository.findByOwnerAdmin_Id(adminId)
@@ -99,9 +108,11 @@ public class ProjectController {
         Project project = new Project();
         project.setName(name.trim());
         project.setDescription(description);
+
         project.setStatus(
                 status == null || status.isBlank()
-                        ? "Pending" : status.trim()
+                        ? "Pending"
+                        : status.trim()
         );
 
         if (deadline != null && !deadline.isBlank()) {
@@ -114,12 +125,15 @@ public class ProjectController {
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Select a team from your workspace."
                     ));
+
             project.setTeam(team);
         }
 
         AppUser admin = userRepository.findById(adminId)
                 .orElseThrow(() ->
-                        new IllegalStateException("Admin workspace not found.")
+                        new IllegalStateException(
+                                "Admin workspace not found."
+                        )
                 );
 
         project.setOwnerAdmin(admin);
@@ -129,21 +143,26 @@ public class ProjectController {
     }
 
     @GetMapping("/projects/delete/{id}")
+    @Transactional
     public String deleteProject(
             @PathVariable Long id,
             Authentication authentication) {
 
         AppUser manager = getManager(authentication);
+        Long adminId = manager.getWorkspaceAdminId();
+
         Project project = projectRepository
-                .findByIdAndOwnerAdmin_Id(
-                        id, manager.getWorkspaceAdminId()
-                )
+                .findByIdAndOwnerAdmin_Id(id, adminId)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Project not found in your workspace."
                         )
                 );
 
+        // Delete tasks belonging to this project first.
+        taskRepository.deleteByProjectId(project.getId());
+
+        // Then delete the project.
         projectRepository.delete(project);
 
         return "redirect:/projects";
