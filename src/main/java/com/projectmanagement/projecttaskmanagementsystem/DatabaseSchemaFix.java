@@ -1,5 +1,7 @@
 package com.projectmanagement.projecttaskmanagementsystem;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DatabaseSchemaFix implements ApplicationRunner {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(DatabaseSchemaFix.class);
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -16,6 +21,8 @@ public class DatabaseSchemaFix implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        logger.info("Checking project_team_members table...");
+
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS project_team_members (
                 team_id BIGINT NOT NULL,
@@ -32,5 +39,7 @@ public class DatabaseSchemaFix implements ApplicationRunner {
                     ON DELETE CASCADE
             )
             """);
+
+        logger.info("Successfully checked/created project_team_members table.");
     }
 }
