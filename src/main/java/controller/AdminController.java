@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -42,7 +43,6 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Verify that the currently logged-in user is an administrator.
     private AppUser getLoggedInAdmin(Authentication authentication) {
 
         if (authentication == null) {
@@ -55,7 +55,6 @@ public class AdminController {
 
         if (admin.getRole() == null
                 || !admin.getRole().trim().equalsIgnoreCase("ADMIN")) {
-
             throw new AccessDeniedException(
                     "Only administrators can access this page.");
         }
@@ -63,7 +62,6 @@ public class AdminController {
         return admin;
     }
 
-    // Display the administrator dashboard.
     @GetMapping("/admin/dashboard")
     public String adminDashboard(
             Authentication authentication,
@@ -72,18 +70,9 @@ public class AdminController {
         AppUser admin = getLoggedInAdmin(authentication);
         Long adminId = admin.getId();
 
-        List<AppUser> users = userRepository.findAll().stream()
-                .filter(user -> {
-                    if (user.getId().equals(adminId)) {
-                        return true;
-                    }
-
-                    AppUser owner = user.getOwnerAdmin();
-
-                    return owner != null
-                            && adminId.equals(owner.getId());
-                })
-                .toList();
+        List<AppUser> users = new ArrayList<>();
+        users.add(admin);
+        users.addAll(userRepository.findByOwnerAdmin_Id(adminId));
 
         model.addAttribute("admin", admin);
         model.addAttribute("users", users);
@@ -92,9 +81,10 @@ public class AdminController {
                 "projects",
                 projectRepository.findByOwnerAdmin_Id(adminId));
 
+        // Only show tasks belonging to this admin's workspace.
         model.addAttribute(
                 "tasks",
-                taskRepository.findAll());
+                taskRepository.findByOwnerAdmin_Id(adminId));
 
         model.addAttribute(
                 "members",
@@ -103,7 +93,6 @@ public class AdminController {
         return "admin-dashboard";
     }
 
-    // Create a manager or employee account.
     @PostMapping("/admin/users/create")
     public String createUser(
             @RequestParam String fullName,
@@ -117,23 +106,11 @@ public class AdminController {
 
         AppUser admin = getLoggedInAdmin(authentication);
 
-        String cleanName = fullName == null
-                ? ""
-                : fullName.trim();
+        String cleanName = fullName == null ? "" : fullName.trim();
+        String cleanUsername = username == null ? "" : username.trim();
+        String cleanEmail = email == null ? "" : email.trim();
+        String cleanRole = role == null ? "" : role.trim().toUpperCase();
 
-        String cleanUsername = username == null
-                ? ""
-                : username.trim();
-
-        String cleanEmail = email == null
-                ? ""
-                : email.trim();
-
-        String cleanRole = role == null
-                ? ""
-                : role.trim().toUpperCase();
-
-        // Validate the submitted information.
         if (cleanName.isBlank()
                 || cleanUsername.isBlank()
                 || password == null
@@ -148,29 +125,19 @@ public class AdminController {
             return adminDashboard(authentication, model);
         }
 
-        // Require an email address for each newly created account.
         if (cleanEmail.isBlank()
                 || !cleanEmail.matches(
                 "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
 
-            model.addAttribute(
-                    "error",
-                    "Enter a valid email address.");
-
+            model.addAttribute("error", "Enter a valid email address.");
             return adminDashboard(authentication, model);
         }
 
-        // Usernames must be unique.
         if (userRepository.existsByUsername(cleanUsername)) {
-
-            model.addAttribute(
-                    "error",
-                    "Username already exists.");
-
+            model.addAttribute("error", "Username already exists.");
             return adminDashboard(authentication, model);
         }
 
-        // Create the login account.
         AppUser user = new AppUser();
 
         user.setFullName(cleanName);
@@ -178,11 +145,8 @@ public class AdminController {
         user.setEmail(cleanEmail);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(cleanRole);
-
-        // Associate this account with the administrator who created it.
         user.setOwnerAdmin(admin);
 
-        // Create a TeamMember record for employees.
         if (cleanRole.equals("EMPLOYEE")) {
 
             TeamMember member = new TeamMember();
@@ -192,13 +156,10 @@ public class AdminController {
             member.setRole("EMPLOYEE");
             member.setOwnerAdmin(admin);
 
-            // Save the employee record before linking it to the login account.
             teamMemberRepository.save(member);
-
             user.setTeamMember(member);
         }
 
-        // Save the login account with its email and assigned administrator.
         userRepository.save(user);
 
         redirectAttributes.addFlashAttribute(

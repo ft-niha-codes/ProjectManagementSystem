@@ -1,10 +1,11 @@
 package com.projectmanagement.projecttaskmanagementsystem.config;
 
 import com.projectmanagement.projecttaskmanagementsystem.CustomUserDetailsService;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,10 +29,14 @@ public class SecurityConfig {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider(userDetailsService);
-
         provider.setPasswordEncoder(passwordEncoder());
-
         return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
@@ -40,24 +45,19 @@ public class SecurityConfig {
 
         http
                 .authenticationProvider(authenticationProvider())
-
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers(
                                 "/login",
                                 "/register-admin",
+                                "/demo-login/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/error"
                         ).permitAll()
-
                         .requestMatchers("/change-password").authenticated()
-
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
                         .requestMatchers("/employee/**").hasRole("EMPLOYEE")
-
                         .requestMatchers(
                                 "/manager/**",
                                 "/projects",
@@ -67,43 +67,36 @@ public class SecurityConfig {
                                 "/team",
                                 "/team/**"
                         ).hasRole("MANAGER")
-
                         .anyRequest().authenticated()
                 )
-
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .usernameParameter("username")
                         .passwordParameter("password")
-
                         .successHandler((request, response, authentication) -> {
+
                             var authorities = authentication.getAuthorities();
 
                             if (authorities.stream().anyMatch(a ->
-                                    a.getAuthority().equals("ROLE_ADMIN"))) {
-
+                                    "ROLE_ADMIN".equals(a.getAuthority()))) {
                                 response.sendRedirect("/admin/dashboard");
 
                             } else if (authorities.stream().anyMatch(a ->
-                                    a.getAuthority().equals("ROLE_MANAGER"))) {
-
+                                    "ROLE_MANAGER".equals(a.getAuthority()))) {
                                 response.sendRedirect("/manager/dashboard");
 
                             } else if (authorities.stream().anyMatch(a ->
-                                    a.getAuthority().equals("ROLE_EMPLOYEE"))) {
-
+                                    "ROLE_EMPLOYEE".equals(a.getAuthority()))) {
                                 response.sendRedirect("/employee/tasks");
 
                             } else {
                                 response.sendRedirect("/login?error");
                             }
                         })
-
                         .failureUrl("/login?error")
                         .permitAll()
                 )
-
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -115,5 +108,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -220,6 +221,20 @@
         <button type="submit">LOGIN</button>
     </form>
 
+    <p>Or use a demo account:</p>
+
+    <button type="button" onclick="fillDemo('DemoAdmin', 'Admin@123')">
+        DEMO ADMIN
+    </button>
+
+    <button type="button" onclick="fillDemo('DemoManager', 'Manager@123')">
+        DEMO MANAGER
+    </button>
+
+    <button type="button" onclick="fillDemo('DemoEmployee', 'Employee@123')">
+        DEMO EMPLOYEE
+    </button>
+
     <p class="register">
         First-time admin?
         <a th:href="@{/register-admin}">Register here</a>
@@ -229,6 +244,13 @@
 <footer class="footer">
     © Project Task Management System
 </footer>
+
+<script>
+    function fillDemo(username, password) {
+        document.getElementById("username").value = username;
+        document.getElementById("password").value = password;
+    }
+</script>
 
 </body>
 </html>

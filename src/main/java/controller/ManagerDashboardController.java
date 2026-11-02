@@ -26,6 +26,7 @@ public class ManagerDashboardController {
             AppUserRepository userRepository,
             ProjectRepository projectRepository,
             TaskRepository taskRepository) {
+
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
@@ -54,27 +55,14 @@ public class ManagerDashboardController {
 
         if (adminId == null) {
             throw new IllegalStateException(
-                    "Your manager account has no admin workspace. "
-                            + "Ask the administrator to create or repair your account.");
+                    "Manager account is not connected to an admin workspace.");
         }
 
         List<Project> projects =
                 projectRepository.findByOwnerAdmin_Id(adminId);
 
-        List<Task> tasks = taskRepository.findAll().stream()
-                .filter(task -> {
-                    if (task.getOwnerAdmin() != null
-                            && adminId.equals(task.getOwnerAdmin().getId())) {
-                        return true;
-                    }
-
-                    return task.getProject() != null
-                            && task.getProject().getOwnerAdmin() != null
-                            && adminId.equals(
-                            task.getProject()
-                                    .getOwnerAdmin().getId());
-                })
-                .toList();
+        List<Task> tasks =
+                taskRepository.findByOwnerAdmin_Id(adminId);
 
         long completed = countStatus(tasks, "COMPLETED");
         long inProgress = countStatus(tasks, "IN PROGRESS");
