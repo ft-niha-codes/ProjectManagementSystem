@@ -1,3 +1,4 @@
+
 package com.projectmanagement.projecttaskmanagementsystem.controller;
 
 import com.projectmanagement.projecttaskmanagementsystem.AppUser;
@@ -25,21 +26,35 @@ public class TeamMemberController {
     }
 
     private AppUser getManager(Authentication authentication) {
+
         if (authentication == null) {
+            System.out.println("ERROR: Authentication is NULL");
             throw new AccessDeniedException("Please log in.");
         }
 
+        System.out.println("LOGIN USER: " + authentication.getName());
+
         AppUser user = userRepository.findByUsername(
                         authentication.getName().trim())
-                .orElseThrow(() ->
-                        new AccessDeniedException("User not found."));
+                .orElseThrow(() -> {
+                    System.out.println("ERROR: User not found in database");
+                    return new AccessDeniedException("User not found.");
+                });
+
+        System.out.println("DATABASE ROLE: " + user.getRole());
+        System.out.println("WORKSPACE ADMIN ID: " +
+                user.getWorkspaceAdminId());
 
         if (!"MANAGER".equalsIgnoreCase(user.getRole())) {
+            System.out.println("ERROR: User is not a MANAGER");
+
             throw new AccessDeniedException(
                     "Only managers can manage team members.");
         }
 
         if (user.getWorkspaceAdminId() == null) {
+            System.out.println("ERROR: Workspace Admin ID is NULL");
+
             throw new IllegalStateException(
                     "Your account has no admin workspace.");
         }
@@ -48,11 +63,15 @@ public class TeamMemberController {
     }
 
     @GetMapping("/team")
-    public String team(Authentication authentication, Model model) {
+    public String team(
+            Authentication authentication,
+            Model model) {
+
         AppUser manager = getManager(authentication);
         Long adminId = manager.getWorkspaceAdminId();
 
         model.addAttribute("member", new TeamMember());
+
         model.addAttribute(
                 "members",
                 teamMemberRepository.findByOwnerAdmin_Id(adminId));
@@ -65,17 +84,24 @@ public class TeamMemberController {
             @ModelAttribute("member") TeamMember member,
             Authentication authentication) {
 
+        System.out.println("SAVE MEMBER METHOD REACHED");
+
         AppUser manager = getManager(authentication);
 
-        if (member.getName() == null || member.getName().isBlank()) {
-            throw new IllegalArgumentException("Member name is required.");
+        if (member.getName() == null ||
+                member.getName().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Member name is required.");
         }
 
-        if (member.getEmail() == null || member.getEmail().isBlank()) {
-            throw new IllegalArgumentException("Member email is required.");
+        if (member.getEmail() == null ||
+                member.getEmail().isBlank()) {
+            throw new IllegalArgumentException(
+                    "Member email is required.");
         }
 
-        if (member.getRole() == null || member.getRole().isBlank()) {
+        if (member.getRole() == null ||
+                member.getRole().isBlank()) {
             throw new IllegalArgumentException(
                     "Please select a job designation.");
         }
@@ -93,6 +119,8 @@ public class TeamMemberController {
 
         teamMemberRepository.save(member);
 
+        System.out.println("TEAM MEMBER SAVED SUCCESSFULLY");
+
         return "redirect:/team";
     }
 
@@ -102,11 +130,15 @@ public class TeamMemberController {
             Authentication authentication,
             Model model) {
 
+        System.out.println("EDIT MEMBER METHOD REACHED");
+        System.out.println("MEMBER ID: " + id);
+
         AppUser manager = getManager(authentication);
 
         TeamMember member = teamMemberRepository
                 .findByIdAndOwnerAdmin_Id(
-                        id, manager.getWorkspaceAdminId())
+                        id,
+                        manager.getWorkspaceAdminId())
                 .orElseThrow(() ->
                         new AccessDeniedException(
                                 "Member not found in your workspace."));
@@ -121,30 +153,39 @@ public class TeamMemberController {
             @ModelAttribute("teamMember") TeamMember submitted,
             Authentication authentication) {
 
+        System.out.println("================================");
+        System.out.println("UPDATE METHOD REACHED");
+        System.out.println("SUBMITTED MEMBER ID: " + submitted.getId());
+        System.out.println("================================");
+
         AppUser manager = getManager(authentication);
 
         TeamMember existing = teamMemberRepository
                 .findByIdAndOwnerAdmin_Id(
                         submitted.getId(),
                         manager.getWorkspaceAdminId())
-                .orElseThrow(() ->
-                        new AccessDeniedException(
-                                "Member not found in your workspace."));
+                .orElseThrow(() -> {
+                    System.out.println(
+                            "ERROR: Member not found in manager workspace");
 
-        if (submitted.getName() == null
-                || submitted.getName().isBlank()) {
+                    return new AccessDeniedException(
+                            "Member not found in your workspace.");
+                });
+
+        if (submitted.getName() == null ||
+                submitted.getName().isBlank()) {
             throw new IllegalArgumentException(
                     "Member name is required.");
         }
 
-        if (submitted.getEmail() == null
-                || submitted.getEmail().isBlank()) {
+        if (submitted.getEmail() == null ||
+                submitted.getEmail().isBlank()) {
             throw new IllegalArgumentException(
                     "Member email is required.");
         }
 
-        if (submitted.getRole() == null
-                || submitted.getRole().isBlank()) {
+        if (submitted.getRole() == null ||
+                submitted.getRole().isBlank()) {
             throw new IllegalArgumentException(
                     "Please select a job designation.");
         }
@@ -155,6 +196,9 @@ public class TeamMemberController {
 
         teamMemberRepository.save(existing);
 
+        System.out.println("TEAM MEMBER UPDATED SUCCESSFULLY");
+        System.out.println("================================");
+
         return "redirect:/team";
     }
 
@@ -163,16 +207,22 @@ public class TeamMemberController {
             @PathVariable Long id,
             Authentication authentication) {
 
+        System.out.println("DELETE MEMBER METHOD REACHED");
+        System.out.println("MEMBER ID: " + id);
+
         AppUser manager = getManager(authentication);
 
         TeamMember member = teamMemberRepository
                 .findByIdAndOwnerAdmin_Id(
-                        id, manager.getWorkspaceAdminId())
+                        id,
+                        manager.getWorkspaceAdminId())
                 .orElseThrow(() ->
                         new AccessDeniedException(
                                 "Member not found in your workspace."));
 
         teamMemberRepository.delete(member);
+
+        System.out.println("TEAM MEMBER DELETED SUCCESSFULLY");
 
         return "redirect:/team";
     }

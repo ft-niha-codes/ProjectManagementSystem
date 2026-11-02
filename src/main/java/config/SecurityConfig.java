@@ -1,3 +1,4 @@
+
 package com.projectmanagement.projecttaskmanagementsystem.config;
 
 import com.projectmanagement.projecttaskmanagementsystem.CustomUserDetailsService;
@@ -55,18 +56,26 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/error"
                         ).permitAll()
+
                         .requestMatchers("/change-password").authenticated()
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
                         .requestMatchers("/employee/**").hasRole("EMPLOYEE")
+
                         .requestMatchers(
                                 "/manager/**",
                                 "/projects",
                                 "/projects/**",
                                 "/tasks",
-                                "/tasks/**",
+                                "/tasks/**"
+                        ).hasRole("MANAGER")
+
+                        .requestMatchers(
                                 "/team",
                                 "/team/**"
-                        ).hasRole("MANAGER")
+                        ).authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

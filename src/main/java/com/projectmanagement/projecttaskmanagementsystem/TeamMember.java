@@ -1,3 +1,4 @@
+
 package com.projectmanagement.projecttaskmanagementsystem;
 
 import jakarta.persistence.*;
@@ -21,10 +22,16 @@ public class TeamMember {
     public TeamMember() {
     }
 
+    // ID getter and setter
     public Long getId() {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    // Name getter and setter
     public String getName() {
         return name;
     }
@@ -33,6 +40,7 @@ public class TeamMember {
         this.name = name;
     }
 
+    // Email getter and setter
     public String getEmail() {
         return email;
     }
@@ -41,6 +49,7 @@ public class TeamMember {
         this.email = email;
     }
 
+    // Role getter and setter
     public String getRole() {
         return role;
     }
@@ -49,6 +58,7 @@ public class TeamMember {
         this.role = role;
     }
 
+    // Owner admin getter and setter
     public AppUser getOwnerAdmin() {
         return ownerAdmin;
     }

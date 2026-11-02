@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -224,6 +225,12 @@
               th:object="${teamMember}"
               method="post">
 
+            <!-- CSRF Security Token -->
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <!-- Team Member ID -->
             <input type="hidden" th:field="*{id}">
 
             <div class="form-group">
